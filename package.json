@@ -1,0 +1,18 @@
+{
+  "name": "native-mobile-learning-docs",
+  "version": "1.0.0",
+  "description": "Native Mobile Development Learning Plan documentation with Android & iOS references",
+  "scripts": {
+    "docs:dev": "vitepress dev docs",
+    "docs:dev:external": "vitepress dev docs --external",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "docs:preview:external": "vitepress preview docs --external"
+  },
+  "devDependencies": {
+    "debug": "^4.4.3",
+    "mermaid": "^11.17.2",
+    "vitepress": "^1.6.3",
+    "vitepress-plugin-mermaid": "^2.0.17"
+  }
+}
