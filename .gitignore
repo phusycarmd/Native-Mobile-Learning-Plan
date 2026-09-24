@@ -1,0 +1,75 @@
+# ===== OS =====
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+Desktop.ini
+
+# ===== Editors / IDE =====
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.iml
+*.swp
+*~
+
+# ===== Node / VitePress =====
+node_modules/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+.temp/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# ===== Env / secrets =====
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.mobileprovision
+*.keystore
+*.jks
+
+# ===== Android (Gradle / Kotlin) =====
+**/android/**/build/
+**/android/**/.gradle/
+**/android/**/.kotlin/
+**/android/**/.cxx/
+**/android/**/.externalNativeBuild/
+local.properties
+captures/
+*.apk
+*.aab
+*.ap_
+*.dex
+google-services.json
+
+# ===== iOS (Xcode) =====
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+DerivedData/
+build/
+*.ipa
+*.dSYM.zip
+*.dSYM
+*.hmap
+Pods/
+Carthage/Build/
+.build/
+.swiftpm/
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+GoogleService-Info.plist
+
+# ===== Logs =====
+*.log
