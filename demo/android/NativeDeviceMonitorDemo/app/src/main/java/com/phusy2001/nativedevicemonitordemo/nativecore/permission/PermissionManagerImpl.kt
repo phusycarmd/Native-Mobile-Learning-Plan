@@ -1,7 +1,10 @@
 package com.phusy2001.nativedevicemonitordemo.nativecore.permission
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -66,5 +69,21 @@ class PermissionManagerImpl(
             launcher?.unregister()
         }
         launcher.launch(permissions.toTypedArray())
+    }
+
+    override fun isPermanentlyDenied(activity: ComponentActivity, permission: String): Boolean {
+        return !checkPermission(permission) &&
+                !activity.shouldShowRequestPermissionRationale(permission)
+    }
+
+    override fun openAppSettings() {
+        val intent = Intent(
+            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+            Uri.fromParts("package", context.packageName, null)
+        ).apply {
+            // context là applicationContext nên cần NEW_TASK để mở Activity
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
     }
 }

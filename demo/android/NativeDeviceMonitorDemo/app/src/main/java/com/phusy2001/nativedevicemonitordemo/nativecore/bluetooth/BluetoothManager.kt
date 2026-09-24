@@ -9,7 +9,11 @@ enum class ConnectionState {
 
 data class BleService(
     val uuid: String,
-    val characteristics: List<String> = emptyList()
+    val characteristics: List<String> = emptyList(),
+    // Các characteristic hỗ trợ Read
+    val readableCharacteristics: List<String> = emptyList(),
+    // Các characteristic hỗ trợ Notify/Indicate (có thể subscribe)
+    val notifiableCharacteristics: List<String> = emptyList()
 )
 
 interface BluetoothManager {
@@ -21,6 +25,8 @@ interface BluetoothManager {
     fun disconnect()
     fun discoverServices(onSuccess: (List<BleService>) -> Unit, onError: (String) -> Unit)
     fun read(characteristicUuid: String, onResult: (ByteArray?, String?) -> Unit)
+    // onResult(null) khi ghi thành công, ngược lại là thông báo lỗi
+    fun write(characteristicUuid: String, data: ByteArray, onResult: (String?) -> Unit)
     fun subscribe(characteristicUuid: String, onNotification: (ByteArray) -> Unit)
     fun unsubscribe(characteristicUuid: String)
     fun getConnectionState(): ConnectionState
