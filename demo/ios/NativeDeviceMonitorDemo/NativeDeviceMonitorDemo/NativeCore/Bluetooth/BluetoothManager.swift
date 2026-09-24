@@ -12,12 +12,15 @@ public struct BleDevice: Identifiable, Equatable {
     public let id: UUID
     public let name: String
     public let rssi: Int
+    /// false: the peripheral only broadcasts (beacon...) and cannot be connected to
+    public let isConnectable: Bool
     public var peripheral: CBPeripheral?
     
-    public init(id: UUID, name: String, rssi: Int, peripheral: CBPeripheral? = nil) {
+    public init(id: UUID, name: String, rssi: Int, isConnectable: Bool = true, peripheral: CBPeripheral? = nil) {
         self.id = id
         self.name = name
         self.rssi = rssi
+        self.isConnectable = isConnectable
         self.peripheral = peripheral
     }
     
@@ -64,6 +67,7 @@ public protocol BluetoothManagerProtocol {
     func disconnect()
     func discoverServices(onSuccess: @escaping ([BleService]) -> Void, onError: @escaping (String) -> Void)
     func read(characteristicUuid: CBUUID, completion: @escaping (Data?, Error?) -> Void)
+    func write(characteristicUuid: CBUUID, data: Data, completion: @escaping (Error?) -> Void)
     func subscribe(characteristicUuid: CBUUID, onNotification: @escaping (Data) -> Void)
     func unsubscribe(characteristicUuid: CBUUID)
     func getConnectionState() -> ConnectionState
@@ -85,6 +89,7 @@ public class BluetoothManager: NSObject, BluetoothManagerProtocol, CBCentralMana
     private var onServicesDiscovered: (([BleService]) -> Void)?
     private var onServicesError: ((String) -> Void)?
     private var readCallbacks: [CBUUID: (Data?, Error?) -> Void] = [:]
+    private var writeCallbacks: [CBUUID: (Error?) -> Void] = [:]
     private var notificationCallbacks: [CBUUID: (Data) -> Void] = [:]
     
     private var connectionState: ConnectionState = .disconnected {
@@ -173,13 +178,46 @@ public class BluetoothManager: NSObject, BluetoothManagerProtocol, CBCentralMana
         peripheral.readValue(for: characteristic)
     }
     
-    public func subscribe(characteristicUuid: CBUUID, onNotification: @escaping (Data) -> Void) {
+    public func write(characteristicUuid: CBUUID, data: Data, completion: @escaping (Error?) -> Void) {
         guard let peripheral = connectedPeripheral,
               let characteristic = activeCharacteristics[characteristicUuid] else {
+            completion(NSError(domain: "BluetoothManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Characteristic not found"]))
             return
         }
+
+        // Prefer Write (acknowledged by the peripheral); fall back to Write Without Response
+        if characteristic.properties.contains(.write) {
+            writeCallbacks[characteristicUuid] = completion
+            peripheral.writeValue(data, for: characteristic, type: .withResponse)
+        } else if characteristic.properties.contains(.writeWithoutResponse) {
+            peripheral.writeValue(data, for: characteristic, type: .withoutResponse)
+            completion(nil)
+        } else {
+            completion(NSError(domain: "BluetoothManager", code: -4, userInfo: [NSLocalizedDescriptionKey: "Characteristic does not support Write"]))
+        }
+    }
+
+    public func subscribe(characteristicUuid: CBUUID, onNotification: @escaping (Data) -> Void) {
+        guard let peripheral = connectedPeripheral, connectionState == .connected else {
+            print("[BluetoothManager] subscribe: No device currently connected.")
+            return
+        }
+        guard let characteristic = activeCharacteristics[characteristicUuid] else {
+            print("[BluetoothManager] subscribe: Characteristic \(characteristicUuid) not found (did you call discoverServices?).")
+            return
+        }
+        // Notify: peripheral pushes without ACK. Indicate: peripheral waits for an ACK.
+        // CoreBluetooth writes the CCCD (0x2902) for us in both cases.
+        guard characteristic.properties.contains(.notify) || characteristic.properties.contains(.indicate) else {
+            print("[BluetoothManager] subscribe: Characteristic \(characteristicUuid) does not support Notify/Indicate.")
+            return
+        }
+
         notificationCallbacks[characteristicUuid] = onNotification
-        peripheral.setNotifyValue(true, for: characteristic)
+        if !characteristic.isNotifying {
+            // Result arrives in peripheral(_:didUpdateNotificationStateFor:error:)
+            peripheral.setNotifyValue(true, for: characteristic)
+        }
     }
     
     public func unsubscribe(characteristicUuid: CBUUID) {
@@ -198,8 +236,11 @@ public class BluetoothManager: NSObject, BluetoothManagerProtocol, CBCentralMana
     // MARK: - CBCentralManagerDelegate
     
     public func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        if central.state != .poweredOn && connectionState != .disconnected {
-            connectionState = .disconnected
+        // When Bluetooth is turned off, CoreBluetooth does NOT call didDisconnectPeripheral,
+        // so the connection has to be cleaned up here.
+        if central.state != .poweredOn && connectedPeripheral != nil {
+            print("[BluetoothManager] Bluetooth is no longer powered on (state: \(central.state.rawValue)), dropping connection.")
+            resetConnection(error: NSError(domain: "BluetoothManager", code: -2, userInfo: [NSLocalizedDescriptionKey: "Bluetooth was turned off"]))
         }
     }
     
@@ -212,6 +253,7 @@ public class BluetoothManager: NSObject, BluetoothManagerProtocol, CBCentralMana
             id: peripheral.identifier,
             name: deviceName,
             rssi: RSSI.intValue,
+            isConnectable: (advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber)?.boolValue ?? true,
             peripheral: peripheral
         )
         
@@ -230,9 +272,39 @@ public class BluetoothManager: NSObject, BluetoothManagerProtocol, CBCentralMana
     }
     
     public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        connectionState = .disconnected
-        connectedPeripheral = nil
+        // Ignore late callbacks from a peripheral that is no longer the active one
+        guard peripheral.identifier == connectedPeripheral?.identifier else { return }
+
+        if connectionState == .disconnecting {
+            print("[BluetoothManager] Disconnected by user.")
+        } else {
+            // Unexpected: peripheral powered off, out of range, or it terminated the link
+            print("[BluetoothManager] Unexpected disconnection: \(error?.localizedDescription ?? "unknown reason")")
+        }
+        resetConnection(error: error)
+    }
+
+    /// Clears all per-connection state, fails pending reads and publishes `.disconnected` last,
+    /// so the UI callback always observes a fully cleaned-up manager.
+    private func resetConnection(error: Error?) {
+        let pendingReads = readCallbacks
+        let pendingWrites = writeCallbacks
+        readCallbacks.removeAll()
+        writeCallbacks.removeAll()
+        notificationCallbacks.removeAll()
         activeCharacteristics.removeAll()
+        connectedPeripheral?.delegate = nil
+        connectedPeripheral = nil
+
+        if !pendingReads.isEmpty || !pendingWrites.isEmpty {
+            let disconnectError = error ?? NSError(domain: "BluetoothManager", code: -3, userInfo: [NSLocalizedDescriptionKey: "Peripheral disconnected"])
+            DispatchQueue.main.async {
+                pendingReads.values.forEach { $0(nil, disconnectError) }
+                pendingWrites.values.forEach { $0(disconnectError) }
+            }
+        }
+
+        connectionState = .disconnected
     }
     
     // MARK: - CBPeripheralDelegate
@@ -285,10 +357,31 @@ public class BluetoothManager: NSObject, BluetoothManagerProtocol, CBCentralMana
             }
         }
         
+        guard error == nil else {
+            print("[BluetoothManager] Value update error for \(characteristic.uuid): \(error!.localizedDescription)")
+            return
+        }
         if let data = characteristic.value, let notifyCallback = notificationCallbacks[characteristic.uuid] {
             DispatchQueue.main.async {
                 notifyCallback(data)
             }
         }
+    }
+
+    public func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
+        guard let writeCallback = writeCallbacks.removeValue(forKey: characteristic.uuid) else { return }
+        DispatchQueue.main.async {
+            writeCallback(error)
+        }
+    }
+
+    public func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+        if let error = error {
+            // e.g. the peripheral rejected the CCCD write (insufficient authentication/encryption)
+            print("[BluetoothManager] Failed to update notify state for \(characteristic.uuid): \(error.localizedDescription)")
+            notificationCallbacks.removeValue(forKey: characteristic.uuid)
+            return
+        }
+        print("[BluetoothManager] Notify \(characteristic.isNotifying ? "enabled" : "disabled") for \(characteristic.uuid)")
     }
 }
