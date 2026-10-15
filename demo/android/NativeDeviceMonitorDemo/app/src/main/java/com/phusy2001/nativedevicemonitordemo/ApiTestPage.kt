@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -50,6 +51,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.phusy2001.nativedevicemonitordemo.nativecore.device.BatteryProviderImpl
 import com.phusy2001.nativedevicemonitordemo.nativecore.network.ApiClient
 import com.phusy2001.nativedevicemonitordemo.nativecore.network.ApiClientImpl
 import com.phusy2001.nativedevicemonitordemo.nativecore.network.ApiResponse
@@ -106,6 +108,9 @@ fun ApiTestPage(
     var isLoading by remember { mutableStateOf(false) }
     var response by remember { mutableStateOf<ApiResponse?>(null) }
 
+    val context = LocalContext.current
+    val batteryProvider = remember { BatteryProviderImpl(context) }
+
     fun send(method: HttpMethod) {
         if (isLoading) return
         focusManager.clearFocus()
@@ -116,7 +121,7 @@ fun ApiTestPage(
         scope.launch {
             response = when (method) {
                 HttpMethod.GET -> apiClient.get(target)
-                HttpMethod.POST -> apiClient.post(target, buildSamplePostBody())
+                HttpMethod.POST -> apiClient.post(target, buildSamplePostBody(batteryProvider.getBatteryLevel()))
             }
             isLoading = false
         }
@@ -363,14 +368,14 @@ private fun prettyJson(raw: String): String {
     }
 }
 
-// Body mẫu theo mockup. Battery đang là giá trị giả, Tuần 3 sẽ lấy từ BatteryProvider
-private fun buildSamplePostBody(): String {
+// Body mẫu theo mockup. Battery được lấy từ BatteryProvider (Tuần 3 - Bài tập 3.2)
+private fun buildSamplePostBody(batteryLevel: Int): String {
     val isoFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
         timeZone = TimeZone.getTimeZone("UTC")
     }
     return JSONObject().apply {
         put("status", "ok")
-        put("battery", 82)
+        put("battery", batteryLevel)
         put("ts", isoFormatter.format(Date()))
     }.toString()
 }

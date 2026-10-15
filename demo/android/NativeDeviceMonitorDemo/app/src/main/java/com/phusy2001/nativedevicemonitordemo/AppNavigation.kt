@@ -51,7 +51,8 @@ private val TextSecondary = Color(0xFF6B7280)
 // Các màn hình có trong Side Menu. Thêm màn mới: thêm 1 entry ở đây và 1 nhánh trong AppRoot
 enum class AppScreen(val title: String, val subtitle: String) {
     BLUETOOTH("Bluetooth BLE", "Scan, connect, notify"),
-    API_CLIENT("API Client", "HTTP GET / POST")
+    API_CLIENT("API Client", "HTTP GET / POST"),
+    DEVICE_MONITOR("Device Monitor", "Metrics, JSONL & background")
 }
 
 @Composable
@@ -94,6 +95,9 @@ fun AppRoot() {
             )
             if (currentScreen == AppScreen.API_CLIENT) {
                 ApiTestPage(onMenuClick = { openDrawer() })
+            }
+            if (currentScreen == AppScreen.DEVICE_MONITOR) {
+                DeviceMonitorPage(onMenuClick = { openDrawer() })
             }
         }
     }

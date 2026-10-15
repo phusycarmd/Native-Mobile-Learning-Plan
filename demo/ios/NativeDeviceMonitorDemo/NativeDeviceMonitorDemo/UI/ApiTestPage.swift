@@ -290,11 +290,12 @@ struct ApiTestPage: View {
         return text
     }
 
-    /// Body mẫu theo mockup. Battery đang là giá trị giả, Tuần 3 sẽ lấy từ BatteryProvider
+    /// Body mẫu theo mockup. Battery được lấy từ BatteryProvider (Tuần 3 - Bài tập 3.2)
     private static func samplePostBody() -> String {
+        let batteryLevel = BatteryProviderImpl.shared.getBatteryLevel()
         let payload: [String: Any] = [
             "status": "ok",
-            "battery": 82,
+            "battery": batteryLevel,
             "ts": ISO8601DateFormatter().string(from: Date())
         ]
         guard let data = try? JSONSerialization.data(withJSONObject: payload, options: [.sortedKeys]),

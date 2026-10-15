@@ -10,6 +10,7 @@ import UIKit
 enum AppScreen: CaseIterable, Identifiable {
     case bluetooth
     case apiClient
+    case deviceMonitor
 
     var id: Self { self }
 
@@ -17,6 +18,7 @@ enum AppScreen: CaseIterable, Identifiable {
         switch self {
         case .bluetooth: return "Bluetooth BLE"
         case .apiClient: return "API Client"
+        case .deviceMonitor: return "Device Monitor"
         }
     }
 
@@ -24,6 +26,7 @@ enum AppScreen: CaseIterable, Identifiable {
         switch self {
         case .bluetooth: return "Scan, connect, notify"
         case .apiClient: return "HTTP GET / POST"
+        case .deviceMonitor: return "Metrics, JSONL & background"
         }
     }
 }
@@ -50,6 +53,10 @@ struct AppRoot: View {
 
             if currentScreen == .apiClient {
                 ApiTestPage(onMenuTap: openMenu)
+            }
+
+            if currentScreen == .deviceMonitor {
+                DeviceMonitorPage(onMenuTap: openMenu)
             }
 
             if isMenuOpen {
