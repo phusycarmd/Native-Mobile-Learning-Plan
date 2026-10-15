@@ -9,8 +9,11 @@ import Foundation
 
 public protocol FileLoggerProtocol {
     func append(_ snapshot: DeviceSnapshot)
+    func append(_ line: String)
     func appendRaw(_ line: String)
+    func appendEntry(_ jsonString: String)
     func readAll() -> [DeviceSnapshot]
+    func readAllEntries() -> [String]
     func readRawLines() -> [String]
     func clear()
     func getFileSizeBytes() -> Int64
@@ -32,6 +35,18 @@ public final class FileLogger: FileLoggerProtocol {
     public func append(_ snapshot: DeviceSnapshot) {
         guard let jsonString = snapshot.toJsonString() else { return }
         appendRaw(jsonString)
+    }
+
+    public func append(_ line: String) {
+        appendRaw(line)
+    }
+
+    public func appendEntry(_ jsonString: String) {
+        appendRaw(jsonString)
+    }
+
+    public func readAllEntries() -> [String] {
+        return readRawLines()
     }
 
     public func appendRaw(_ line: String) {

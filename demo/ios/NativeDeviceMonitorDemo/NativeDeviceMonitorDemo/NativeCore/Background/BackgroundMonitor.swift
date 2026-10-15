@@ -20,7 +20,13 @@ public protocol BackgroundMonitorProtocol: ObservableObject {
     func getLatestSnapshot() -> DeviceSnapshot?
     func readLogEntries() -> [DeviceSnapshot]
     func triggerManualSnapshot() -> DeviceSnapshot
-    func clearLogs()
+    @discardableResult func clearLogs() -> Bool
+
+    // Chuẩn docs/guide/architecture.md
+    func start(intervalSeconds: Int)
+    func stop()
+    func getStatus() -> DeviceSnapshot
+    func getLogs() -> [String]
 }
 
 public final class BackgroundMonitor: ObservableObject, BackgroundMonitorProtocol {
@@ -88,9 +94,30 @@ public final class BackgroundMonitor: ObservableObject, BackgroundMonitorProtoco
         return recordSnapshot()
     }
 
-    public func clearLogs() {
+    @discardableResult
+    public func clearLogs() -> Bool {
         fileLogger.clear()
-        logCount = 0
+        DispatchQueue.main.async { [weak self] in
+            self?.logCount = 0
+        }
+        return true
+    }
+
+    // MARK: - Architecture Protocol Methods
+    public func start(intervalSeconds: Int) {
+        startMonitoring(intervalSeconds: TimeInterval(intervalSeconds))
+    }
+
+    public func stop() {
+        stopMonitoring()
+    }
+
+    public func getStatus() -> DeviceSnapshot {
+        return getLatestSnapshot() ?? snapshotProvider.takeSnapshot()
+    }
+
+    public func getLogs() -> [String] {
+        return fileLogger.readRawLines()
     }
 
     // MARK: - Internal Timer & Collection

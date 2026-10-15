@@ -47,6 +47,11 @@ interface MediaManager {
      * Trích xuất thông tin ảnh (width, height, sizeBytes).
      */
     fun getMediaInfo(uri: Uri): MediaInfo?
+
+    // Chuẩn docs/guide/architecture.md & docs/modules/media.md
+    fun requestCameraPermission(activity: ComponentActivity, onResult: (Boolean) -> Unit)
+    fun capturePhoto(activity: ComponentActivity, onSuccess: (Uri) -> Unit, onError: (String) -> Unit)
+    fun pickMedia(activity: ComponentActivity, onSuccess: (Uri) -> Unit, onError: (String) -> Unit)
 }
 
 // MARK: - Implementation
@@ -123,6 +128,31 @@ class MediaManagerImpl(
             )
         } catch (e: Exception) {
             null
+        }
+    }
+
+    override fun requestCameraPermission(activity: ComponentActivity, onResult: (Boolean) -> Unit) {
+        val key = "camera_perm_${UUID.randomUUID()}"
+        var launcher: ActivityResultLauncher<String>? = null
+        launcher = activity.activityResultRegistry.register(
+            key,
+            ActivityResultContracts.RequestPermission()
+        ) { granted ->
+            launcher?.unregister()
+            onResult(granted)
+        }
+        launcher.launch(android.Manifest.permission.CAMERA)
+    }
+
+    override fun capturePhoto(activity: ComponentActivity, onSuccess: (Uri) -> Unit, onError: (String) -> Unit) {
+        launchCamera(activity) { uri ->
+            if (uri != null) onSuccess(uri) else onError("User cancelled camera capture")
+        }
+    }
+
+    override fun pickMedia(activity: ComponentActivity, onSuccess: (Uri) -> Unit, onError: (String) -> Unit) {
+        launchPhotoPicker(activity) { uri ->
+            if (uri != null) onSuccess(uri) else onError("User cancelled photo picking")
         }
     }
 

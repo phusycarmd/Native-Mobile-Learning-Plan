@@ -73,8 +73,25 @@ class BackgroundMonitorImpl(
         return snapshot
     }
 
-    override fun clearLogs() {
+    override fun clearLogs(): Boolean {
         fileLogger.clear()
         DeviceMonitorService.updateLogCount(0)
+        return true
+    }
+
+    override fun start(intervalSeconds: Int) {
+        startMonitoring(intervalSeconds.toLong())
+    }
+
+    override fun stop() {
+        stopMonitoring()
+    }
+
+    override fun getStatus(): DeviceSnapshot {
+        return getLatestSnapshot() ?: triggerManualSnapshot()
+    }
+
+    override fun getLogs(): List<String> {
+        return fileLogger.readRawLines()
     }
 }

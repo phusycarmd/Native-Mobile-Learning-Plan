@@ -6,8 +6,11 @@ import java.io.File
 
 interface FileLogger {
     fun append(snapshot: DeviceSnapshot)
+    fun append(line: String)
     fun appendRaw(line: String)
+    fun appendEntry(jsonString: String)
     fun readAll(): List<DeviceSnapshot>
+    fun readAllEntries(): List<String>
     fun readRawLines(): List<String>
     fun clear()
     fun getFileSizeBytes(): Long
@@ -26,6 +29,14 @@ class FileLoggerImpl(
 
     override fun append(snapshot: DeviceSnapshot) {
         appendRaw(snapshot.toJson())
+    }
+
+    override fun append(line: String) {
+        appendRaw(line)
+    }
+
+    override fun appendEntry(jsonString: String) {
+        appendRaw(jsonString)
     }
 
     override fun appendRaw(line: String) {
@@ -50,6 +61,8 @@ class FileLoggerImpl(
         }
         return result
     }
+
+    override fun readAllEntries(): List<String> = readRawLines()
 
     override fun readRawLines(): List<String> {
         synchronized(lock) {

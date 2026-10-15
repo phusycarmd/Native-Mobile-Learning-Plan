@@ -42,6 +42,11 @@ public protocol MediaManagerProtocol {
 
     /// Trích xuất thông tin ảnh (width, height, sizeBytes)
     func getMediaInfo(image: UIImage) -> MediaInfo
+
+    // Chuẩn docs/guide/architecture.md & docs/modules/media.md
+    func requestCameraPermission(completion: @escaping (Bool) -> Void)
+    func capturePhoto(from viewController: UIViewController, completion: @escaping (Result<UIImage, Error>) -> Void)
+    func pickMedia(from viewController: UIViewController, completion: @escaping (Result<UIImage, Error>) -> Void)
 }
 
 // MARK: - Implementation
@@ -158,6 +163,38 @@ extension MediaManager: PHPickerViewControllerDelegate {
                     self?.pickerCallback?(object as? UIImage)
                 }
                 self?.pickerCallback = nil
+            }
+        }
+    }
+
+    // MARK: - Architecture Protocol Methods
+
+    public func requestCameraPermission(completion: @escaping (Bool) -> Void) {
+        AVCaptureDevice.requestAccess(for: .video) { granted in
+            DispatchQueue.main.async {
+                completion(granted)
+            }
+        }
+    }
+
+    public func capturePhoto(from viewController: UIViewController, completion: @escaping (Result<UIImage, Error>) -> Void) {
+        launchCamera(from: viewController) { image in
+            if let image = image {
+                completion(.success(image))
+            } else {
+                let err = NSError(domain: "MediaManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "User cancelled camera capture"])
+                completion(.failure(err))
+            }
+        }
+    }
+
+    public func pickMedia(from viewController: UIViewController, completion: @escaping (Result<UIImage, Error>) -> Void) {
+        launchPhotoPicker(from: viewController) { image in
+            if let image = image {
+                completion(.success(image))
+            } else {
+                let err = NSError(domain: "MediaManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "User cancelled photo picking"])
+                completion(.failure(err))
             }
         }
     }

@@ -17,5 +17,11 @@ interface BackgroundMonitor {
     fun getLatestSnapshot(): DeviceSnapshot?
     fun readLogEntries(): List<DeviceSnapshot>
     fun triggerManualSnapshot(): DeviceSnapshot
-    fun clearLogs()
+    fun clearLogs(): Boolean
+
+    // Tương thích chuẩn docs/guide/architecture.md
+    fun start(intervalSeconds: Int = 5)
+    fun stop()
+    fun getStatus(): DeviceSnapshot
+    fun getLogs(): List<String>
 }
