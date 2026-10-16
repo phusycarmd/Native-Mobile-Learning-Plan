@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -89,7 +88,8 @@ private const val MIN_RSSI = -90
 
 @Composable
 fun HomePage(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onMenuClick: () -> Unit = {}
 ) {
     // Colors matching the design
     val primaryBlue = Color(0xFF2563EB)
@@ -264,22 +264,7 @@ fun HomePage(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         containerColor = Color.White,
-        topBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(primaryBlue)
-                    .statusBarsPadding()
-                    .padding(horizontal = 20.dp, vertical = 16.dp)
-            ) {
-                Text(
-                    text = "Native Device Monitor",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
-                )
-            }
-        }
+        topBar = { AppTopBar(title = "Native Device Monitor", onMenuClick = onMenuClick) }
     ) { innerPadding ->
         Column(
             modifier = Modifier

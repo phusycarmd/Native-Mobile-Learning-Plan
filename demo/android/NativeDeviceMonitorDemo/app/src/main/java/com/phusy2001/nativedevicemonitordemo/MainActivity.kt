@@ -15,7 +15,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NativeDeviceMonitorDemoTheme {
-                HomePage()
+                AppRoot()
             }
         }
         Log.d(TAG, "--> onCreate: Khởi tạo View và biến")

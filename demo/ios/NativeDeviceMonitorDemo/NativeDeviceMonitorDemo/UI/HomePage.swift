@@ -85,6 +85,13 @@ struct HomePage: View {
 
     @FocusState private var isSearchFocused: Bool
 
+    let onMenuTap: () -> Void
+
+    // Khai báo init tường minh: memberwise init sẽ là private vì có thuộc tính @State private
+    init(onMenuTap: @escaping () -> Void = {}) {
+        self.onMenuTap = onMenuTap
+    }
+
     /// Lọc theo từ khoá, sau đó sắp xếp tín hiệu mạnh nhất (dBm lớn nhất) lên đầu
     private var filteredDevices: [DiscoveredDevice] {
         // Ẩn thiết bị nhiễu: không kết nối được hoặc tín hiệu quá yếu
@@ -107,16 +114,7 @@ struct HomePage: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Top Bar
-            HStack {
-                Text("Native Device Monitor")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.white)
-                Spacer()
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
-            .background(primaryBlue.ignoresSafeArea(edges: .top))
+            AppHeader(title: "Native Device Monitor", onMenuTap: onMenuTap)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {

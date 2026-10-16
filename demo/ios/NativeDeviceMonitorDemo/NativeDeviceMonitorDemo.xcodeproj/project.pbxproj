@@ -112,6 +112,7 @@
 			);
 			name = NativeDeviceMonitorDemo;
 			packageProductDependencies = (
+				AF0000023058EF4000C6DC0B /* Alamofire */,
 			);
 			productName = NativeDeviceMonitorDemo;
 			productReference = 3E97F1F03058EF4100C6DC0B /* NativeDeviceMonitorDemo.app */;
@@ -199,6 +200,9 @@
 			productRefGroup = 3E97F1F13058EF4100C6DC0B /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
+			packageReferences = (
+				AF0000013058EF4000C6DC0B /* XCRemoteSwiftPackageReference "Alamofire" */,
+			);
 			targets = (
 				3E97F1EF3058EF4000C6DC0B /* NativeDeviceMonitorDemo */,
 				3E97F1FC3058EF4200C6DC0B /* NativeDeviceMonitorDemoTests */,
@@ -631,6 +635,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		AF0000013058EF4000C6DC0B /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.9.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		AF0000023058EF4000C6DC0B /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = AF0000013058EF4000C6DC0B /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 3E97F1E83058EF4000C6DC0B /* Project object */;
 }

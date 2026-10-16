@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Ảnh chụp từ Camera lưu vào Pictures/ trong bộ nhớ ngoài -->
+    <external-path
+        name="external_pictures"
+        path="Pictures/" />
+
+    <!-- Fallback: bộ nhớ ngoài chung (Android 9 trở xuống) -->
+    <external-path
+        name="external_root"
+        path="." />
+
+    <!-- Ảnh lưu tạm trong thư mục cache nội bộ của app -->
+    <cache-path
+        name="camera_cache"
+        path="." />
+</paths>
