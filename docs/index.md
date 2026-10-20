@@ -54,6 +54,7 @@ Tài liệu được biên soạn dựa trên chương trình đào tạo của 
 | [**1. Hướng dẫn & Kiến trúc**](/guide/overview) | Mục tiêu, Scope, Kiến trúc NativeCore, Public Interfaces | Nắm vững nguyên lý tách biệt UI và Native Logic |
 | [**2. Part I — Modules kiến thức**](/modules/ui) | 6 Module chuyên sâu: UI, Permission, BLE, Media, API, Background Monitor | Kèm tài liệu tham khảo chính thức của **Android** & **iOS** |
 | [**3. Part II — Lộ trình tuần**](/schedule/) | Kế hoạch chi tiết từ Tuần 1 đến Tuần 4 (~56 giờ) | Bài tập từng ngày, tiêu chí bàn giao (Milestones) & Thứ tự ưu tiên |
-| [**4. Trung tâm tra cứu**](/references/comparison) | Bảng đối chiếu song song Android vs iOS, Manifest & Info.plist keys | Tra cứu nhanh hàm, lớp và cấu hình quyền |
+| [**4. Lộ trình KMP (Cross-Platform)**](/kmp/overview) | Chuyển đổi kiến trúc sang Kotlin Multiplatform (Shared Logic Only) | Chia sẻ 100% Core Logic & Giữ trọn vẹn Native UI (Compose / SwiftUI) |
+| [**5. Trung tâm tra cứu**](/references/comparison) | Bảng đối chiếu song song Android vs iOS, Manifest & Info.plist keys | Tra cứu nhanh hàm, lớp và cấu hình quyền |
 
 </div>

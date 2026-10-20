@@ -36,6 +36,7 @@ export default withMermaid(
       { text: 'Kiến thức (Modules)', link: '/modules/ui', activeMatch: '^/modules/' },
       { text: 'Lộ trình tuần', link: '/schedule/', activeMatch: '^/schedule/(?!exercises)' },
       { text: 'Bài tập', link: '/schedule/exercises', activeMatch: '^/schedule/exercises' },
+      { text: 'Lộ trình KMP', link: '/kmp/overview', activeMatch: '^/kmp/' },
       { text: 'Tra cứu (Refs)', link: '/references/comparison', activeMatch: '^/references/' }
     ],
     sidebar: {
@@ -71,6 +72,18 @@ export default withMermaid(
             { text: 'Tuần 3: NativeCore & Background', link: '/schedule/week-3' },
             { text: 'Tuần 4: Testing & Refactoring', link: '/schedule/week-4' },
             { text: '📝 Tổng hợp 17 Bài tập thực hành', link: '/schedule/exercises' }
+          ]
+        }
+      ],
+      '/kmp/': [
+        {
+          text: 'Kotlin Multiplatform (KMP)',
+          items: [
+            { text: '1. Tổng quan & Kiến trúc KMP', link: '/kmp/overview' },
+            { text: '2. Hiện thực mã nguồn mẫu (Implementation)', link: '/kmp/implementation' },
+            { text: '3. Lộ trình 4 tuần chi tiết', link: '/kmp/schedule' },
+            { text: '4. Bài tập thực hành KMP', link: '/kmp/exercises' },
+            { text: '5. Tra cứu & Thư viện KMP', link: '/kmp/references' }
           ]
         }
       ],
